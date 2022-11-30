@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% load mptt_tags %}
+
+{% block title %}Древовидную структуру отделов{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <hr>
+            <div class="col-sm-4">
+                <h2>Подразделения</h2>
+                <div id="treeview-selectable" class=""></div>
+            </div>
+            <div class="col-md-8">
+                <h2>Список сотрудников</h2>
+                {% for employee in employees %}
+                    <div>
+                        <h5>ФИО: {{ employee.full_name|title }}</h5>
+                        <p> <b>Должность</b>: {{ employee.position|title }} | <b>Размер ЗП</b>: {{ employee.salary }} руб.</p>
+                        <p><b>Дата приема на работу</b>: {{ employee.date_of_employment|date:'d-m-Y' }}
+                            | <b>Подразделение</b>: {{ employee.division.title }}</p>
+                    </div>
+                    <hr>
+                {% endfor %}
+                <div id="selectable-output"></div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block script %}
+    <script type="text/javascript">
+        const songs = [
+            {% recursetree object_list %}
+                {
+                    text: "{{ node.title}}",
+                    href: "{{node.slug}}",
+                    link: "{{ node.slug }}",
+                    {% if not node.is_leaf_node %}
+                        nodes: [
+                            {{ children }}
+                        ]
+                    {% endif %}
+                },
+            {% endrecursetree %}
+        ]
+        $(function () {
+
+            let initSelectableTree = function () {
+                return $('#treeview-selectable').treeview({
+                    data: songs,
+                    multiSelect: $('#chk-select-multi').is(':checked')
+                });
+            };
+
+            let $selectableTree = initSelectableTree();
+
+        });
+    </script>
+{% endblock %}
